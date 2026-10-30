@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101a2b" />
+  <meta name="description" content="Interactive Quantitative Finance exam preparation dashboard: flashcards, quizzes, exam predictions, formulas and revision notes." />
+  <title>Quantitative Finance | Exam Prep Studio</title>
+  <style>
+    :root {
+      --bg: #f3f6fa;
+      --surface: #ffffff;
+      --surface-2: #f7f9fc;
+      --ink: #172338;
+      --muted: #68778c;
+      --line: #e3e9f0;
+      --nav: #101a2b;
+      --nav-2: #17253b;
+      --accent: #2d8c89;
+      --accent-dark: #236f70;
+      --accent-soft: #e2f3f1;
+      --blue: #4678bd;
+      --blue-soft: #eaf1fb;
+      --gold: #b67a23;
+      --gold-soft: #fbf2e4;
+      --red: #b44f55;
+      --red-soft: #fae9ea;
+      --green: #2c8064;
+      --green-soft: #e5f4ee;
+      --shadow: 0 12px 36px rgba(24, 42, 67, .07);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.55; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 250px minmax(0, 1fr); }
+    aside { background: var(--nav); color: #d9e4f1; padding: 25px 16px; display: flex; flex-direction: column; gap: 26px; }
+    .brand { padding: 4px 12px 16px; border-bottom: 1px solid rgba(255,255,255,.1); }
+    .brand-mark { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, #53b4a8, #3d719f); color: white; font-weight: 800; letter-spacing: -.04em; margin-bottom: 13px; }
+    .brand h1 { margin: 0; color: white; font-size: 15px; letter-spacing: .02em; }
+    .brand p { margin: 4px 0 0; color: #91a2b9; font-size: 11px; text-transform: uppercase; letter-spacing: .13em; }
+    .nav-label { padding: 0 12px; color: #71839b; font-size: 10px; text-transform: uppercase; letter-spacing: .15em; font-weight: 800; margin-bottom: 7px; }
+    .nav-list { display: grid; gap: 5px; }
+    .nav-btn { width: 100%; border: 0; border-radius: 11px; padding: 10px 12px; display: flex; gap: 12px; align-items: center; color: #b6c4d5; background: transparent; text-align: left; font-size: 13px; transition: .18s; }
+    .nav-btn:hover { background: rgba(255,255,255,.07); color: white; }
+    .nav-btn.active { color: white; background: rgba(65, 161, 151, .2); box-shadow: inset 3px 0 #55b9ac; }
+    .nav-icon { width: 20px; text-align: center; opacity: .95; }
+    .sidebar-note { margin-top: auto; background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 14px; color: #a9b9cc; font-size: 11px; }
+    .sidebar-note strong { color: white; display: block; font-size: 12px; margin-bottom: 5px; }
+    main { min-width: 0; padding: 28px clamp(18px, 3vw, 42px) 50px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 25px; }
+    .eyebrow { color: var(--accent-dark); font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: .16em; }
+    .topbar h2 { margin: 3px 0 0; font-size: clamp(20px, 2.5vw, 27px); letter-spacing: -.04em; }
+    .top-actions { display: flex; gap: 8px; align-items: center; }
+    .date-chip { background: white; border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; color: var(--muted); font-size: 11px; }
+    .btn { border: 1px solid var(--line); border-radius: 10px; padding: 9px 13px; background: white; color: var(--ink); font-size: 12px; font-weight: 700; transition: .18s; }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 15px rgba(28,43,64,.08); }
+    .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+    .btn.primary:hover { background: var(--accent-dark); }
+    .btn.ghost { background: transparent; }
+    .btn.small { padding: 7px 10px; font-size: 11px; }
+    .page { display: none; animation: fade .2s ease; }
+    .page.active { display: block; }
+    @keyframes fade { from { opacity: .4; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+    .hero { position: relative; overflow: hidden; padding: clamp(23px, 4vw, 38px); background: linear-gradient(118deg, #172a41 0%, #203c54 56%, #276e70 100%); color: white; border-radius: 22px; box-shadow: var(--shadow); }
+    .hero:after { content: "QF"; position: absolute; right: 6%; top: -32px; font-size: clamp(100px, 17vw, 210px); font-weight: 900; letter-spacing: -.12em; color: rgba(255,255,255,.045); pointer-events: none; }
+    .hero-content { max-width: 670px; position: relative; z-index: 1; }
+    .hero .eyebrow { color: #9cddd4; }
+    .hero h3 { margin: 10px 0 10px; font-size: clamp(28px, 4vw, 43px); letter-spacing: -.055em; line-height: 1.08; }
+    .hero p { color: #d2e0e9; max-width: 600px; margin: 0 0 21px; font-size: 13px; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+    .hero .btn { background: white; border-color: white; color: #16304a; }
+    .hero .btn.outline { background: transparent; color: white; border-color: rgba(255,255,255,.35); }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 13px; margin: 18px 0 23px; }
+    .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 15px; padding: 16px; box-shadow: 0 4px 15px rgba(30,50,75,.025); }
+    .stat .label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; font-weight: 800; }
+    .stat .value { margin: 6px 0 2px; font-size: 25px; letter-spacing: -.05em; font-weight: 800; }
+    .stat .hint { color: var(--muted); font-size: 10px; }
+    .grid-2 { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(280px,.85fr); gap: 17px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 13px; }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 19px; box-shadow: 0 4px 18px rgba(22,43,70,.025); min-width: 0; }
+    .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .panel h3 { margin: 0; font-size: 15px; letter-spacing: -.02em; }
+    .panel-sub { color: var(--muted); font-size: 11px; margin-top: 4px; }
+    .section-title { display: flex; justify-content: space-between; align-items: end; gap: 15px; margin: 25px 0 13px; }
+    .section-title h3 { margin: 0; font-size: 17px; letter-spacing: -.035em; }
+    .section-title p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+    .pill { display: inline-flex; border-radius: 999px; padding: 4px 8px; font-size: 10px; font-weight: 800; white-space: nowrap; background: var(--blue-soft); color: var(--blue); }
+    .pill.high { background: var(--green-soft); color: var(--green); }
+    .pill.medium { background: var(--gold-soft); color: var(--gold); }
+    .pill.low { background: var(--red-soft); color: var(--red); }
+    .progress-line { height: 7px; border-radius: 99px; background: #edf1f5; overflow: hidden; }
+    .progress-line span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, #2d8c89, #69b9a9); transition: width .25s; }
+    .priority-list { display: grid; gap: 13px; }
+    .priority-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+    .priority-row strong { font-size: 12px; }
+    .priority-row small { color: var(--muted); font-size: 10px; display: block; }
+    .priority-row .progress-line { grid-column: 1 / -1; }
+    .quick-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+    .quick-card { padding: 14px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); text-align: left; color: var(--ink); }
+    .quick-card:hover { border-color: #9acdc4; background: #f5fbfa; }
+    .quick-card .q-icon { font-size: 18px; margin-bottom: 7px; }
+    .quick-card strong { display: block; font-size: 12px; }
+    .quick-card span { display: block; color: var(--muted); font-size: 10px; margin-top: 3px; }
+    .notice { border-radius: 12px; padding: 12px 14px; font-size: 11px; color: #6e552b; background: var(--gold-soft); border: 1px solid #f2e2c4; }
+    .notice.info { background: var(--blue-soft); border-color: #d9e6f7; color: #3e5d85; }
+    .notice.success { background: var(--green-soft); border-color: #cce8dc; color: #326b56; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th { color: var(--muted); text-align: left; text-transform: uppercase; letter-spacing: .09em; font-size: 9px; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+    td { padding: 11px 8px; border-bottom: 1px solid #edf1f5; vertical-align: top; }
+    tr:last-child td { border-bottom: 0; }
+    td strong { font-size: 11px; }
+    .freq { font-weight: 800; white-space: nowrap; }
+    .frequency-bar { width: 95px; height: 6px; border-radius: 99px; background: #edf1f5; overflow: hidden; margin-top: 5px; }
+    .frequency-bar span { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
+    .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+    .toolbar-left, .toolbar-right { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .search { width: min(270px, 100%); border: 1px solid var(--line); background: white; border-radius: 10px; padding: 9px 11px; outline: none; font-size: 11px; }
+    .search:focus, select:focus { border-color: #7fbdb3; box-shadow: 0 0 0 3px rgba(45,140,137,.1); }
+    select { border: 1px solid var(--line); background: white; border-radius: 10px; padding: 9px 11px; color: var(--ink); font-size: 11px; outline: none; }
+    .flash-wrap { max-width: 760px; margin: 0 auto; }
+    .flash-meta { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 11px; margin-bottom: 10px; }
+    .flashcard { min-height: 300px; perspective: 1200px; cursor: pointer; outline: none; }
+    .flash-inner { min-height: 300px; position: relative; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.2,.7,.2,1); }
+    .flashcard.flipped .flash-inner { transform: rotateY(180deg); }
+    .flash-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 22px; padding: clamp(22px,5vw,44px); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; box-shadow: var(--shadow); border: 1px solid var(--line); }
+    .flash-front { background: linear-gradient(145deg, #fff, #f5fafb); }
+    .flash-back { transform: rotateY(180deg); background: linear-gradient(145deg, #17334a, #235b61); color: white; border-color: #235b61; }
+    .flash-face .kicker { text-transform: uppercase; letter-spacing: .16em; font-size: 9px; font-weight: 800; color: var(--accent); margin-bottom: 18px; }
+    .flash-back .kicker { color: #a7ded5; }
+    .flash-face h3 { margin: 0; font-size: clamp(20px,3.3vw,31px); letter-spacing: -.04em; line-height: 1.25; max-width: 650px; }
+    .flash-face p { color: #d2e4e6; max-width: 650px; margin: 15px 0 0; font-size: 13px; }
+    .flash-hint { margin-top: 24px; color: var(--muted); font-size: 10px; }
+    .flash-back .flash-hint { color: #acc4cc; }
+    .flash-controls { display: flex; justify-content: center; gap: 9px; flex-wrap: wrap; margin: 17px 0 10px; }
+    .rating-controls { display: flex; justify-content: center; gap: 9px; margin-top: 9px; }
+    .rating-controls .btn { min-width: 145px; }
+    .key-hint { text-align: center; color: var(--muted); font-size: 10px; margin: 12px 0 0; }
+    .quiz-question { font-size: 18px; font-weight: 800; line-height: 1.35; letter-spacing: -.025em; margin: 6px 0 17px; }
+    .option-list { display: grid; gap: 9px; }
+    .option { border: 1px solid var(--line); background: white; color: var(--ink); border-radius: 12px; padding: 12px 14px; text-align: left; display: flex; gap: 11px; align-items: flex-start; font-size: 12px; transition: .15s; }
+    .option:hover:not(:disabled) { border-color: #8dc3ba; background: #f8fcfb; }
+    .option .letter { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 7px; background: var(--surface-2); color: var(--muted); font-weight: 800; flex: 0 0 auto; font-size: 10px; }
+    .option.correct { border-color: #83c5a8; background: var(--green-soft); }
+    .option.correct .letter { background: #ccebdc; color: var(--green); }
+    .option.wrong { border-color: #e5a4a8; background: var(--red-soft); }
+    .option.wrong .letter { background: #f4d4d6; color: var(--red); }
+    .feedback { margin-top: 13px; padding: 13px; border-radius: 12px; font-size: 11px; display: none; }
+    .feedback.show { display: block; }
+    .feedback.good { background: var(--green-soft); color: #28654f; }
+    .feedback.bad { background: var(--red-soft); color: #8b4247; }
+    .quiz-footer { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-top: 18px; }
+    .prediction-list { display: grid; gap: 11px; }
+    .prediction { border: 1px solid var(--line); border-radius: 14px; background: white; overflow: hidden; }
+    .prediction-top { padding: 14px 15px; display: grid; grid-template-columns: 32px minmax(0,1fr) auto; align-items: start; gap: 11px; cursor: pointer; }
+    .prediction-num { width: 29px; height: 29px; border-radius: 9px; display: grid; place-items: center; background: var(--blue-soft); color: var(--blue); font-weight: 900; font-size: 11px; }
+    .prediction-title { font-size: 12px; font-weight: 800; }
+    .prediction-meta { color: var(--muted); font-size: 10px; margin-top: 4px; }
+    .prediction-detail { display: none; border-top: 1px solid var(--line); padding: 13px 15px 15px 58px; color: #526177; font-size: 11px; background: #fbfcfe; }
+    .prediction.open .prediction-detail { display: block; }
+    .prediction-detail strong { color: var(--ink); }
+    .topic-card { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: white; }
+    .topic-card h4 { margin: 0 0 4px; font-size: 12px; }
+    .topic-card p { margin: 0 0 10px; font-size: 10px; color: var(--muted); min-height: 32px; }
+    .topic-card .topic-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: var(--muted); }
+    .accordion { border: 1px solid var(--line); border-radius: 13px; overflow: hidden; background: white; margin-bottom: 9px; }
+    .accordion summary { list-style: none; cursor: pointer; padding: 14px 16px; font-weight: 800; font-size: 12px; display: flex; justify-content: space-between; gap: 12px; }
+    .accordion summary::-webkit-details-marker { display: none; }
+    .accordion summary:after { content: "+"; color: var(--accent); font-size: 17px; line-height: 1; }
+    .accordion[open] summary:after { content: "−"; }
+    .accordion-body { padding: 0 16px 16px; color: #526177; font-size: 11px; }
+    .accordion-body h4 { color: var(--ink); font-size: 11px; margin: 13px 0 5px; }
+    .accordion-body p { margin: 6px 0; }
+    .accordion-body ul { margin: 6px 0; padding-left: 18px; }
+    .formula-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+    .formula { padding: 14px; background: white; border: 1px solid var(--line); border-radius: 13px; min-width: 0; }
+    .formula h4 { margin: 0 0 8px; font-size: 11px; }
+    .equation { background: #f5f8fb; border-radius: 9px; padding: 11px; font-family: "Cambria Math", Cambria, Georgia, serif; font-size: 14px; overflow-x: auto; white-space: nowrap; color: #203e59; }
+    .formula p { margin: 8px 0 0; color: var(--muted); font-size: 10px; }
+    .mistake-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
+    .mistake { border: 1px solid var(--line); background: white; border-radius: 12px; padding: 12px; }
+    .mistake strong { display: block; font-size: 11px; margin-bottom: 4px; }
+    .mistake span { color: var(--muted); font-size: 10px; }
+    .takeaway { padding: 14px 15px; border-left: 3px solid var(--accent); background: #f2f9f8; border-radius: 0 11px 11px 0; color: #365b5a; font-size: 12px; margin-bottom: 9px; }
+    .empty { color: var(--muted); text-align: center; padding: 30px 10px; font-size: 12px; }
+    .footer { color: #8793a3; font-size: 10px; text-align: center; padding: 25px 0 0; }
+    .toast { position: fixed; right: 20px; bottom: 20px; background: #132b40; color: white; border-radius: 11px; padding: 11px 15px; font-size: 11px; box-shadow: var(--shadow); opacity: 0; transform: translateY(8px); pointer-events: none; transition: .2s; z-index: 20; }
+    .toast.show { opacity: 1; transform: none; }
+    .mobile-menu { display: none; }
+    .subtle { color: var(--muted); font-size: 10px; }
+    .two-col-notes { columns: 2; column-gap: 25px; }
+    .two-col-notes > * { break-inside: avoid; }
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 210px minmax(0,1fr); }
+      .stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      .app { display: block; }
+      aside { position: fixed; z-index: 30; inset: 0 auto 0 0; width: 260px; transform: translateX(-105%); transition: transform .25s; box-shadow: 20px 0 50px rgba(0,0,0,.2); }
+      aside.open { transform: none; }
+      .mobile-menu { display: inline-flex; }
+      main { padding: 19px 14px 35px; }
+      .topbar { align-items: flex-start; }
+      .date-chip { display: none; }
+      .grid-3 { grid-template-columns: 1fr; }
+      .formula-grid, .mistake-grid { grid-template-columns: 1fr; }
+      .two-col-notes { columns: 1; }
+      .prediction-detail { padding-left: 15px; }
+      .flashcard, .flash-inner { min-height: 270px; }
+    }
+    @media print {
+      aside, .topbar, .hero-actions, .toolbar, .flash-controls, .rating-controls, .key-hint, .btn, .toast { display: none !important; }
+      .app { display: block; } main { padding: 0; }
+      .page { display: block !important; page-break-after: always; }
+      body { background: white; font-size: 10pt; }
+      .panel, .stat, .formula, .topic-card { box-shadow: none; break-inside: avoid; }
+      .flashcard { display: none; }
+      .accordion { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">QF</div>
+      <h1>EXAM PREP STUDIO</h1>
+      <p>Quantitative Finance</p>
+    </div>
+    <div>
+      <div class="nav-label">Workspace</div>
+      <nav class="nav-list">
+        <button class="nav-btn active" data-page="dashboard"><span class="nav-icon">▦</span> Dashboard</button>
+        <button class="nav-btn" data-page="flashcards"><span class="nav-icon">▤</span> Flashcards <span id="nav-card-count" class="pill" style="margin-left:auto">20</span></button>
+        <button class="nav-btn" data-page="quiz"><span class="nav-icon">◉</span> Exam practice</button>
+        <button class="nav-btn" data-page="predictions"><span class="nav-icon">◎</span> Predicted questions</button>
+        <button class="nav-btn" data-page="topics"><span class="nav-icon">▥</span> Topic analysis</button>
+      </nav>
+    </div>
+    <div>
+      <div class="nav-label">Reference desk</div>
+      <nav class="nav-list">
+        <button class="nav-btn" data-page="revision"><span class="nav-icon">☷</span> Revision sheet</button>
+        <button class="nav-btn" data-page="formulas"><span class="nav-icon">ƒ</span> Formula vault</button>
+        <button class="nav-btn" data-page="exam-method"><span class="nav-icon">✎</span> Exam technique</button>
+      </nav>
+    </div>
+    <div class="sidebar-note">
+      <strong>Built around your papers</strong>
+      Past papers: dated sets from 2020–2025. Lecture coverage: uploaded Lectures 1–8. Later topics are flagged where slide coverage is missing.
+    </div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:11px">
+        <button class="btn mobile-menu" id="mobile-menu" aria-label="Open navigation">☰</button>
+        <div>
+          <div class="eyebrow">ICEF · Quantitative Finance</div>
+          <h2 id="page-title">Your exam command centre</h2>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span class="date-chip" id="today-chip"></span>
+        <button class="btn small" id="print-btn" title="Print current study pages">⎙ Print</button>
+      </div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section class="page active" id="page-dashboard">
+      <div class="hero">
+        <div class="hero-content">
+          <div class="eyebrow">Prepare for understanding, not pattern-matching</div>
+          <h3>Turn every lecture into<br/>exam-ready thinking.</h3>
+          <p>A focused workspace for ARMA models, stationarity, forecasting, forecast evaluation and financial risk. Practise recall, test your understanding and keep track of what still needs work.</p>
+          <div class="hero-actions">
+            <button class="btn" data-go="flashcards">Start flashcards →</button>
+            <button class="btn outline" data-go="quiz">Take a quick test</button>
+          </div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="label">Cards mastered</div><div class="value" id="stat-known">0</div><div class="hint" id="stat-known-hint">of 20 marked as known</div></div>
+        <div class="stat"><div class="label">Quiz best score</div><div class="value" id="stat-score">—</div><div class="hint">Across completed attempts</div></div>
+        <div class="stat"><div class="label">Questions practised</div><div class="value" id="stat-practised">0</div><div class="hint">Answered in this browser</div></div>
+        <div class="stat"><div class="label">Topics to revisit</div><div class="value" id="stat-review">20</div><div class="hint">Cards not yet marked known</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><div><h3>Core study priorities</h3><div class="panel-sub">Based on recurrence in the supplied papers and importance in the lecture structure.</div></div><span class="pill high">Start here</span></div>
+          <div class="priority-list" id="dashboard-priorities"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div><h3>Jump back in</h3><div class="panel-sub">Choose a study mode.</div></div></div>
+          <div class="quick-grid">
+            <button class="quick-card" data-go="flashcards"><div class="q-icon">▤</div><strong>Active recall</strong><span>Flip cards and rate your confidence</span></button>
+            <button class="quick-card" data-go="quiz"><div class="q-icon">◉</div><strong>Exam practice</strong><span>Multiple-choice checks with explanations</span></button>
+            <button class="quick-card" data-go="predictions"><div class="q-icon">◎</div><strong>Likely questions</strong><span>Review the ten predicted question types</span></button>
+            <button class="quick-card" data-go="formulas"><div class="q-icon">ƒ</div><strong>Formula vault</strong><span>Find key formulas quickly</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="section-title"><div><h3>Examiner's recurring logic</h3><p>The patterns to recognise before you start calculating.</p></div></div>
+      <div class="grid-3">
+        <div class="topic-card"><h4>One model, many implications</h4><p>A single ARMA process may generate questions about orders, roots, moments, ACF and forecasts.</p><span class="pill high">Consistent pattern</span></div>
+        <div class="topic-card"><h4>Small twists matter</h4><p>Watch for trends, unusual information sets, correlated errors and alternative loss functions.</p><span class="pill high">High-risk trap</span></div>
+        <div class="topic-card"><h4>Interpret the result</h4><p>Finish tests and calculations by explaining what the result means in the question's context.</p><span class="pill medium">Mark-winning habit</span></div>
+      </div>
+      <div class="section-title"><div><h3>Evidence boundary</h3><p>What this dashboard is and is not claiming.</p></div></div>
+      <div class="notice info">The frequency map is based on six dated exam sets in the supplied collection (2020–2025), with duplicated pages excluded. Counts are approximate topic-presence counts, not a statistical forecast. The uploaded lecture deck covers Lectures 1–8; EMH, VaR backtesting and high-frequency data are listed in the course outline but their full lecture materials were not supplied.</div>
+    </section>
+
+    <!-- FLASHCARDS -->
+    <section class="page" id="page-flashcards">
+      <div class="section-title" style="margin-top:0"><div><h3>Flashcard laboratory</h3><p>Use active recall: attempt the answer before flipping the card.</p></div><span class="pill" id="flash-progress-label">Card 1 of 20</span></div>
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <select id="flash-filter"><option value="all">All cards</option><option value="new">Not rated</option><option value="again">Needs practice</option><option value="known">Marked known</option></select>
+          <select id="flash-category"><option value="all">All topics</option></select>
+        </div>
+        <div class="toolbar-right"><button class="btn small" id="shuffle-cards">⇄ Shuffle</button><button class="btn small" id="reset-cards">Reset ratings</button></div>
+      </div>
+      <div class="flash-wrap">
+        <div class="flash-meta"><span id="flash-category-label">FOUNDATIONS</span><span id="flash-rating-label">Not rated</span></div>
+        <div class="progress-line" style="margin-bottom:14px"><span id="flash-progress" style="width:5%"></span></div>
+        <div class="flashcard" id="flashcard" tabindex="0" role="button" aria-label="Flashcard. Press Enter or Space to flip.">
+          <div class="flash-inner">
+            <div class="flash-face flash-front"><div class="kicker">Front · Recall the concept</div><h3 id="flash-front">What are the three requirements for weak stationarity?</h3><div class="flash-hint">Think first, then click or press Enter to reveal the answer.</div></div>
+            <div class="flash-face flash-back"><div class="kicker">Back · Check your reasoning</div><h3 id="flash-back">Constant mean, constant variance, and covariance depending only on lag.</h3><p id="flash-extra"></p><div class="flash-hint">Rate your recall below.</div></div>
+          </div>
+        </div>
+        <div class="flash-controls"><button class="btn" id="flash-prev">← Previous</button><button class="btn primary" id="flash-flip">Reveal answer</button><button class="btn" id="flash-next">Next →</button></div>
+        <div class="rating-controls"><button class="btn" id="rate-again" style="border-color:#efc6c8;color:#a4464c">↻ Need practice</button><button class="btn" id="rate-known" style="border-color:#b9dfcf;color:#287758">✓ I know this</button></div>
+        <div class="key-hint">Keyboard shortcuts: ← / → navigate · Space flips · 1 = need practice · 2 = known</div>
+      </div>
+      <div class="panel" style="max-width:760px;margin:22px auto 0"><div class="panel-head"><div><h3>Your recall progress</h3><div class="panel-sub">Ratings are saved locally in this browser.</div></div><strong id="recall-percentage">0%</strong></div><div class="progress-line"><span id="recall-bar"></span></div><div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--muted)"><span id="recall-known">0 known</span><span id="recall-again">0 to revisit</span><span id="recall-new">20 new</span></div></div>
+    </section>
+
+    <!-- QUIZ -->
+    <section class="page" id="page-quiz">
+      <div class="section-title" style="margin-top:0"><div><h3>Exam practice</h3><p>Short questions to test the distinctions and derivations that underpin the past papers.</p></div><span class="pill" id="quiz-counter">Question 1 / 15</span></div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><div><h3 id="quiz-topic">Stationarity</h3><div class="panel-sub">Choose the best answer. Explanations appear after submission.</div></div><span class="pill medium" id="quiz-difficulty">Core</span></div>
+          <div class="progress-line"><span id="quiz-progress" style="width:6.7%"></span></div>
+          <div class="quiz-question" id="quiz-question">Which statement is sufficient for weak stationarity?</div>
+          <div class="option-list" id="quiz-options"></div>
+          <div class="feedback" id="quiz-feedback"></div>
+          <div class="quiz-footer"><span class="subtle" id="quiz-score-live">Score: 0 correct</span><button class="btn primary" id="quiz-next" disabled>Next question →</button></div>
+        </div>
+        <div class="panel">
+          <h3>How to use this practice</h3>
+          <p class="panel-sub" style="margin-bottom:14px">The aim is to diagnose weak links, not merely maximise a quick score.</p>
+          <div class="priority-list">
+            <div><strong style="font-size:11px">1. Commit to an answer</strong><div class="subtle">Do not reveal the explanation before choosing.</div></div>
+            <div><strong style="font-size:11px">2. Explain why the distractors fail</strong><div class="subtle">This is where conceptual precision develops.</div></div>
+            <div><strong style="font-size:11px">3. Revisit the matching revision section</strong><div class="subtle">Use the topic label above each question.</div></div>
+          </div>
+          <div class="notice info" style="margin-top:18px">This is a generated practice set based on the supplied course material and recurring exam themes. It is not an official question bank or a guarantee of exam content.</div>
+          <div class="section-title"><div><h3>Attempt summary</h3><p>For this session.</p></div></div>
+          <div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr));margin:0"><div class="stat"><div class="label">Correct</div><div class="value" id="quiz-correct">0</div></div><div class="stat"><div class="label">Attempted</div><div class="value" id="quiz-attempted">0</div></div></div>
+          <button class="btn" id="quiz-restart" style="width:100%;margin-top:13px">Restart practice set</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PREDICTIONS -->
+    <section class="page" id="page-predictions">
+      <div class="section-title" style="margin-top:0"><div><h3>Ten predicted question types</h3><p>Ranked using recurrence, recent paper emphasis and lecture coverage. Expand each to see what to prepare.</p></div><button class="btn small" id="expand-predictions">Expand all</button></div>
+      <div class="notice info" style="margin-bottom:14px">Probability labels are examiner-style judgements, not measured probabilities. Predictions are weighted toward topics that recur or combine multiple lecture concepts.</div>
+      <div class="prediction-list" id="prediction-list"></div>
+    </section>
+
+    <!-- TOPICS -->
+    <section class="page" id="page-topics">
+      <div class="section-title" style="margin-top:0"><div><h3>Past-paper topic analysis</h3><p>Presence in dated exam sets, not raw number of subquestions.</p></div><span class="pill">2020–2025</span></div>
+      <div class="panel" style="margin-bottom:14px"><div class="panel-head"><div><h3>Frequency map</h3><div class="panel-sub">Six dated exam sets; duplicated paper pages are not counted twice.</div></div></div><div class="table-wrap"><table><thead><tr><th>Topic</th><th>Paper presence</th><th>Pattern</th><th>Priority</th></tr></thead><tbody id="topic-table"></tbody></table></div></div>
+      <div class="section-title"><div><h3>Exam question types</h3><p>Qualitative classification of the question design.</p></div></div>
+      <div class="grid-3">
+        <div class="topic-card"><h4>Calculation / derivation</h4><p>Dominant format: derive a forecast, variance, autocorrelation, optimal weight or test statistic.</p><span class="pill high">Dominant</span></div>
+        <div class="topic-card"><h4>Theoretical</h4><p>Definitions, conditions, properties and conceptual distinctions often embedded in a multi-part problem.</p><span class="pill high">Very common</span></div>
+        <div class="topic-card"><h4>Application / interpretation</h4><p>Translate a financial, portfolio or contextual story into a stochastic model and interpret the result.</p><span class="pill medium">Common</span></div>
+      </div>
+      <div class="section-title"><div><h3>Command words to master</h3><p>Qualitative ranking from the supplied questions.</p></div></div>
+      <div class="panel"><div class="table-wrap"><table><thead><tr><th>Rank</th><th>Command word</th><th>Expected response</th></tr></thead><tbody>
+        <tr><td>1</td><td><strong>Derive</strong></td><td>Show the mathematical steps leading to a result.</td></tr>
+        <tr><td>2</td><td><strong>Calculate / Find</strong></td><td>Obtain a numerical or algebraic result and show the work.</td></tr>
+        <tr><td>3</td><td><strong>Show / Prove</strong></td><td>Establish that a property or relationship holds.</td></tr>
+        <tr><td>4</td><td><strong>Explain / Justify</strong></td><td>Give the mathematical reasoning behind a statement.</td></tr>
+        <tr><td>5</td><td><strong>Describe / Define</strong></td><td>State a precise definition or outline a procedure.</td></tr>
+        <tr><td>6</td><td><strong>Test</strong></td><td>Specify hypotheses, statistic, decision rule and conclusion.</td></tr>
+        <tr><td>7</td><td><strong>Compare / Evaluate</strong></td><td>Assess alternatives against a stated criterion.</td></tr>
+      </tbody></table></div></div>
+    </section>
+
+    <!-- REVISION -->
+    <section class="page" id="page-revision">
+      <div class="section-title" style="margin-top:0"><div><h3>Revision sheet</h3><p>Definitions, key ideas and reusable exam methods in one place.</p></div><input class="search" id="revision-search" placeholder="Search this revision sheet…" /></div>
+      <div id="revision-content">
+        <details class="accordion" open data-search="weak stationarity strict stationarity white noise"><summary>1. Stationarity, white noise and dependence</summary><div class="accordion-body">
+          <h4>Weak stationarity</h4><p>A process is covariance stationary if its mean is constant, its variance is constant, and its autocovariance depends only on the lag.</p>
+          <div class="equation">E(Yₜ) = μ; Var(Yₜ) = σ²; Cov(Yₜ,Yₜ₊ₕ) = γ(h)</div>
+          <h4>Strict stationarity</h4><p>All finite-dimensional joint distributions are invariant to a common time shift. Strict stationarity does not necessarily imply weak stationarity if the required moments do not exist. For a Gaussian process, weak stationarity implies strict stationarity.</p>
+          <h4>White noise</h4><p>Zero mean, constant variance and zero autocovariance at non-zero lags. White noise need not be independent or IID.</p>
+          <h4>Key distinction</h4><p>Independence implies zero covariance when second moments exist; zero covariance does not generally imply independence.</p>
+        </div></details>
+        <details class="accordion" data-search="arma ar ma arima lag operator roots stationarity invertibility"><summary>2. ARMA / ARIMA models and roots</summary><div class="accordion-body">
+          <h4>Model identification</h4><p>AR(p): dependence on lagged values. MA(q): dependence on current and lagged innovations. ARMA(p,q): both. ARIMA(p,d,q): ARMA after differencing d times.</p>
+          <div class="equation">φ(L)(1 − L)ᵈYₜ = c + θ(L)εₜ</div>
+          <h4>Lag operator</h4><p>LYₜ = Yₜ₋₁; LˢYₜ = Yₜ₋ₛ. Use the lag operator to collect the AR and MA polynomials.</p>
+          <h4>Roots</h4><p>For the standard AR lag polynomial, stationarity requires roots outside the unit circle. For the MA lag polynomial, invertibility requires roots outside the unit circle. The reciprocal characteristic-root convention puts the inverse roots inside; state which polynomial you use.</p>
+          <h4>Finite MA process</h4><p>A finite MA(q) process is covariance stationary if the innovations are stationary; its MA coefficients do not need restrictions for covariance stationarity. Invertibility is a separate property.</p>
+        </div></details>
+        <details class="accordion" data-search="acf pacf yule walker autocorrelation autocovariance"><summary>3. ACF, PACF and autocovariance</summary><div class="accordion-body">
+          <div class="equation">γ(h) = Cov(Yₜ,Yₜ₊ₕ); ρ(h) = γ(h)/γ(0)</div>
+          <p>ACF measures correlation with lagged observations. PACF measures the direct relationship after controlling for intermediate lags.</p>
+          <ul><li>AR(p): ACF tails off; PACF cuts off after p.</li><li>MA(q): ACF cuts off after q; PACF tails off.</li><li>ARMA(p,q): both generally tail off.</li></ul>
+          <h4>AR(1)</h4><div class="equation">Yₜ = c + φYₜ₋₁ + εₜ; &nbsp; ρ(h) = φ<sup>|h|</sup></div><p>For a stationary AR(1), the intended expression is ρ(h) = φ<sup>|h|</sup>.</p>
+        </div></details>
+        <details class="accordion" data-search="forecast conditional expectation errors variance horizon information set"><summary>4. Forecasts, information sets and forecast errors</summary><div class="accordion-body">
+          <h4>Under MSE</h4><div class="equation">Ŷₜ₊ₕ|ₜ = E(Yₜ₊ₕ | Iₜ)</div>
+          <h4>Forecast error</h4><div class="equation">eₜ₊ₕ|ₜ = Yₜ₊ₕ − Ŷₜ₊ₕ|ₜ</div>
+          <p>Retain innovations known at the forecast origin. Replace unknown future innovations with their conditional expectation, usually zero under the stated white-noise assumption. At longer horizons, additional future shocks enter the forecast error.</p>
+          <h4>AR(1) forecasts</h4><div class="equation">Ŷₜ₊ₕ|ₜ = μ + φʰ(Yₜ − μ), &nbsp; μ = c/(1−φ)</div>
+          <p>For |φ| less than one, the forecast converges to the unconditional mean as the horizon increases.</p>
+          <h4>Optimal MSE error properties</h4><ul><li>Optimal forecasts are unbiased.</li><li>One-step errors are white noise.</li><li>h-step error variance is non-decreasing and converges to the unconditional variance.</li><li>h-step errors are at most MA(h−1).</li></ul>
+        </div></details>
+        <details class="accordion" data-search="trend stationary difference stationary unit root adf dickey fuller"><summary>5. Non-stationarity and unit-root testing</summary><div class="accordion-body">
+          <h4>Trend-stationary</h4><p>Stationary fluctuations around a deterministic time trend. Removing the deterministic trend is the relevant transformation.</p>
+          <h4>Difference-stationary</h4><p>A stochastic trend, such as a random walk, is removed by differencing. A random walk has variance increasing with time conditional on its initial value.</p>
+          <h4>ADF logic</h4><div class="equation">ΔYₜ = δ + γYₜ₋₁ + Σᵢ ψᵢΔYₜ₋ᵢ + uₜ</div><p>Null: unit root (γ = 0). Alternative: stationarity under the deterministic specification. The specification may include no deterministic term, an intercept, or an intercept plus trend. Use DF/ADF critical values, not ordinary standard-normal critical values.</p>
+        </div></details>
+        <details class="accordion" data-search="box jenkins identification estimation diagnostics ljung box aic bic"><summary>6. Box–Jenkins and model selection</summary><div class="accordion-body">
+          <ol><li><strong>Identification:</strong> inspect plot, stationarity, ACF and PACF; propose candidate orders.</li><li><strong>Estimation:</strong> estimate parameters; AR models may use OLS, while MA/ARMA estimation accounts for unobserved innovations.</li><li><strong>Diagnostic checking:</strong> inspect residual autocorrelation, heteroskedasticity and structural change; compare candidate models and favour parsimony with adequate fit.</li></ol>
+          <h4>Ljung–Box</h4><div class="equation">Q(m) = T(T+2) Σⱼ₌₁ᵐ ρ̂ⱼ²/(T−j)</div><p>Null: no autocorrelation through lag m. Small p-value: reject the null; residual autocorrelation remains.</p>
+          <p>For AIC/BIC, lower values are preferred when models are compared on a consistent sample and convention. Information criteria do not replace residual diagnostics.</p>
+        </div></details>
+        <details class="accordion" data-search="loss function optimal forecast mse absolute asymmetric median quantile"><summary>7. Optimal forecasts and loss functions</summary><div class="accordion-body">
+          <div class="equation">Ŷ* = arg minᵧ̂ Eₜ[L(Y, Ŷ)]</div>
+          <ul><li>Squared-error loss → conditional mean.</li><li>Absolute-error loss → conditional median.</li><li>Asymmetric absolute loss → conditional quantile determined by the asymmetry.</li></ul>
+          <p>Method: write expected loss, differentiate with respect to the forecast, set the FOC to zero, solve, and check the SOC or minimisation condition. Do not assume the conditional mean under every loss function.</p>
+        </div></details>
+        <details class="accordion" data-search="mincer zarnowitz forecast optimality regression hypothesis"><summary>8. Mincer–Zarnowitz test</summary><div class="accordion-body">
+          <div class="equation">Yₜ₊₁ = β₀ + β₁Ŷₜ₊₁|ₜ + uₜ₊₁</div>
+          <p>Null: β₀ = 0 and β₁ = 1. Alternative: at least one restriction fails. Conduct a joint test of the two restrictions and interpret the result as a regression-based test of forecast calibration/optimality.</p>
+        </div></details>
+        <details class="accordion" data-search="diebold mariano dm test forecast comparison loss difference"><summary>9. Diebold–Mariano test</summary><div class="accordion-body">
+          <div class="equation">dₜ = L(Yₜ, Ŷᴬₜ) − L(Yₜ, Ŷᴮₜ); &nbsp; H₀: E(dₜ)=0</div>
+          <div class="equation">DM = d̄ / √V̂(d̄)</div>
+          <p>Under uncorrelated loss differences, this can be written as d̄√T / √V̂(dₜ). Rejection means unequal expected loss. With dₜ = loss A − loss B, a negative average difference means A has lower average loss. Account for serial dependence when it is present.</p>
+        </div></details>
+        <details class="accordion" data-search="forecast encompassing combining optimal weights correlation mse"><summary>10. Forecast encompassing and combination</summary><div class="accordion-body">
+          <p>Forecast A encompasses B if B adds no relevant information conditional on A. A regression-based test considers the restrictions β₁ = 1 and β₂ = 0 in a regression on both forecasts.</p>
+          <div class="equation">MSEc = ω²σ₁² + (1−ω)²σ₂² + 2ω(1−ω)ρσ₁σ₂</div>
+          <div class="equation">ω* = (σ₂²−ρσ₁σ₂)/(σ₁²+σ₂²−2ρσ₁σ₂)</div>
+          <p>If σ₁ = σ₂ = σ, the optimal weight is one-half and the combined MSE is σ²(1+ρ)/2.</p>
+        </div></details>
+        <details class="accordion" data-search="returns stylised facts volatility clustering heavy tails arch garch"><summary>11. Financial returns and volatility</summary><div class="accordion-body">
+          <p>Lecture 8 summarises stylised facts including weak serial correlation in returns, non-normal unconditional returns, volatility clustering, leverage effects, volatility mean reversion, time-varying cross-correlation and long memory in volatility.</p>
+          <div class="equation">εₜ = σₜvₜ; &nbsp; σₜ² = ω + αεₜ₋₁²</div>
+          <p>ARCH models let conditional variance depend on past squared shocks. GARCH adds lagged conditional variance, allowing volatility persistence. The complete extensions lecture is not included in the uploaded slide pack.</p>
+        </div></details>
+        <details class="accordion" data-search="var value at risk quantile normal risk management"><summary>12. Value-at-Risk: the course's anchor formula</summary><div class="accordion-body">
+          <div class="equation">VaRₜᵅ = −μₜ − σₜΦ⁻¹(α)</div>
+          <p>This is the normal conditional-distribution formulation shown in Lecture 1. μₜ is conditional mean return, σₜ is conditional standard deviation, and Φ⁻¹(α) is the standard-normal quantile. The lecture itself raises the question of whether normality is appropriate.</p>
+          <div class="notice info">Full VaR model comparison and backtesting details belong to later lectures, which were listed in the course outline but not present in the supplied slide file.</div>
+        </div></details>
+        <details class="accordion" data-search="var granger causality cointegration johansen"><summary>13. VAR, Granger causality and cointegration</summary><div class="accordion-body">
+          <p>A VAR is a system in which each variable is explained by its own lags and lags of the other variables. Innovations across equations may be contemporaneously correlated.</p>
+          <p>Y Granger-causes Z if lagged Y helps predict Z, conditional on lagged Z and the other information in the model. Test the joint zero restrictions on lagged Y terms in the Z equation.</p>
+          <p>For a two-variable system, the rank of Π in the VECM representation determines the cointegration case. The lecture identifies Johansen's test as the procedure for testing the rank.</p>
+        </div></details>
+      </div>
+    </section>
+
+    <!-- FORMULAS -->
+    <section class="page" id="page-formulas">
+      <div class="section-title" style="margin-top:0"><div><h3>Formula vault</h3><p>Compact reference for the formulas most useful in exam derivations.</p></div><input class="search" id="formula-search" placeholder="Search formulas…" /></div>
+      <div class="formula-grid" id="formula-grid">
+        <div class="formula" data-search="weak stationarity autocovariance"><h4>Weak stationarity</h4><div class="equation">E(Yₜ)=μ; Var(Yₜ)=σ²; γₜ(h)=γ(h)</div><p>Mean and variance constant; covariance depends only on lag.</p></div>
+        <div class="formula" data-search="autocorrelation acf"><h4>Autocorrelation</h4><div class="equation">ρ(h)=γ(h)/γ(0)</div><p>Autocovariance divided by unconditional variance.</p></div>
+        <div class="formula" data-search="ar1 mean unconditional"><h4>AR(1) unconditional mean</h4><div class="equation">μ=c/(1−φ)</div><p>For Yₜ=c+φYₜ₋₁+εₜ with |φ| less than one.</p></div>
+        <div class="formula" data-search="ar1 variance"><h4>AR(1) unconditional variance</h4><div class="equation">γ(0)=σ²ε/(1−φ²)</div><p>For a stationary AR(1).</p></div>
+        <div class="formula" data-search="ar1 acf"><h4>AR(1) ACF</h4><div class="equation">ρ(h)=φ<sup>|h|</sup></div><p>Geometric decay, possibly alternating if φ is negative.</p></div>
+        <div class="formula" data-search="ar1 forecast horizon"><h4>AR(1) h-step forecast</h4><div class="equation">Ŷₜ₊ₕ|ₜ=μ+φʰ(Yₜ−μ)</div><p>Forecast converges to μ as h increases if |φ| less than one.</p></div>
+        <div class="formula" data-search="ar1 forecast error variance"><h4>AR(1) forecast-error variance</h4><div class="equation">σ²ε(1−φ²ʰ)/(1−φ²)</div><p>For h-step forecasts of a stationary AR(1).</p></div>
+        <div class="formula" data-search="ma3 variance"><h4>MA(q) variance</h4><div class="equation">σ²ε(1+θ₁²+…+θq²)</div><p>For mutually uncorrelated innovations.</p></div>
+        <div class="formula" data-search="forecast error"><h4>Forecast error</h4><div class="equation">eₜ₊ₕ|ₜ=Yₜ₊ₕ−Ŷₜ₊ₕ|ₜ</div><p>Realised value minus forecast.</p></div>
+        <div class="formula" data-search="optimal forecast mse"><h4>MSE-optimal forecast</h4><div class="equation">Ŷ*=E(Y|Iₜ)</div><p>Conditional expectation minimises expected squared error.</p></div>
+        <div class="formula" data-search="ljung box test"><h4>Ljung–Box statistic</h4><div class="equation">Q(m)=T(T+2)Σⱼ₌₁ᵐ ρ̂ⱼ²/(T−j)</div><p>Test for autocorrelation through lag m.</p></div>
+        <div class="formula" data-search="diebold mariano"><h4>DM statistic</h4><div class="equation">DM=d̄/√V̂(d̄)</div><p>For dₜ = loss A − loss B.</p></div>
+        <div class="formula" data-search="mincer zarnowitz"><h4>Mincer–Zarnowitz</h4><div class="equation">Yₜ₊₁=β₀+β₁Ŷₜ₊₁|ₜ+uₜ₊₁</div><p>Joint null: β₀=0 and β₁=1.</p></div>
+        <div class="formula" data-search="forecast combination mse"><h4>Combined forecast MSE</h4><div class="equation">ω²σ₁²+(1−ω)²σ₂²+2ω(1−ω)ρσ₁σ₂</div><p>Includes the covariance between forecast errors.</p></div>
+        <div class="formula" data-search="optimal weight combination"><h4>Optimal combination weight</h4><div class="equation">ω*=(σ₂²−ρσ₁σ₂)/(σ₁²+σ₂²−2ρσ₁σ₂)</div><p>Minimises the MSE of a convex two-forecast combination.</p></div>
+        <div class="formula" data-search="value at risk var normal"><h4>Normal VaR formula in Lecture 1</h4><div class="equation">VaRₜᵅ=−μₜ−σₜΦ⁻¹(α)</div><p>Conditional normal-distribution formulation shown in the lecture.</p></div>
+      </div>
+      <div class="notice info" style="margin-top:14px">Notation varies across textbooks and software. In the exam, use the exact notation and sign convention stated in the question or lecture.</div>
+    </section>
+
+    <!-- EXAM TECHNIQUE -->
+    <section class="page" id="page-exam-method">
+      <div class="section-title" style="margin-top:0"><div><h3>Exam technique</h3><p>A repeatable structure for showing your reasoning and securing method marks.</p></div></div>
+      <div class="grid-2">
+        <div class="panel"><h3>Universal calculation / derivation template</h3><div class="panel-sub">Use this structure whenever a question asks you to derive, calculate or show.</div>
+          <div class="priority-list" style="margin-top:17px">
+            <div><strong style="font-size:12px">01 · Identify the model and assumptions</strong><div class="subtle">Write down the process, parameter restrictions, innovation properties and information set.</div></div>
+            <div><strong style="font-size:12px">02 · State the relevant definition</strong><div class="subtle">For example, weak stationarity, optimality or the null hypothesis.</div></div>
+            <div><strong style="font-size:12px">03 · Set up the mathematical expression</strong><div class="subtle">Do not jump straight to a final formula.</div></div>
+            <div><strong style="font-size:12px">04 · Show the algebra</strong><div class="subtle">Explain why cross-products vanish, which shocks are known and which are future shocks.</div></div>
+            <div><strong style="font-size:12px">05 · Box the result</strong><div class="subtle">Make the final expression easy to identify.</div></div>
+            <div><strong style="font-size:12px">06 · Interpret it</strong><div class="subtle">State what it implies about stationarity, model adequacy or forecast performance.</div></div>
+          </div>
+        </div>
+        <div class="panel"><h3>Hypothesis-testing template</h3><div class="panel-sub">Use this order for ADF, Ljung–Box, DM, MZ and Granger tests.</div>
+          <ol style="padding-left:19px;font-size:11px;color:#526177;line-height:2.1;margin-top:16px">
+            <li>Name the test and the question it addresses.</li>
+            <li>State H₀ and H₁ precisely.</li>
+            <li>Write the test statistic.</li>
+            <li>Substitute the supplied estimates and sample size.</li>
+            <li>Compare the p-value or statistic with the correct critical value.</li>
+            <li>Reject or fail to reject H₀.</li>
+            <li>Translate the decision into the question's context.</li>
+          </ol>
+          <div class="notice" style="margin-top:11px">Do not write “accept H₀” when the test does not reject it. Say “fail to reject H₀” and explain what the evidence does or does not support.</div>
+        </div>
+      </div>
+      <div class="section-title"><div><h3>Common examiner traps</h3><p>Check these before submitting an answer.</p></div></div>
+      <div class="mistake-grid">
+        <div class="mistake"><strong>Zero covariance ≠ independence</strong><span>Use a joint-probability counterexample or explain that uncorrelatedness is weaker.</span></div>
+        <div class="mistake"><strong>White noise ≠ automatically IID</strong><span>Do not infer independence unless it is given or established.</span></div>
+        <div class="mistake"><strong>Stationarity ≠ invertibility</strong><span>Stationarity concerns AR roots; invertibility concerns MA roots.</span></div>
+        <div class="mistake"><strong>Do not ignore deterministic terms</strong><span>A time trend or alternating mean can make the whole process non-stationary.</span></div>
+        <div class="mistake"><strong>Respect the information set</strong><span>Known shocks remain in the conditional forecast; only unknown future shocks are averaged out.</span></div>
+        <div class="mistake"><strong>Check the DM sign convention</strong><span>With d = loss A − loss B, negative average loss difference favours A.</span></div>
+        <div class="mistake"><strong>Do not assume MSE for every loss</strong><span>Derive the optimal forecast from the loss function in the question.</span></div>
+        <div class="mistake"><strong>Model fit is not enough</strong><span>Compare information criteria and inspect residual diagnostics.</span></div>
+        <div class="mistake"><strong>Unit-root critical values differ</strong><span>Use the correct DF/ADF specification and critical values.</span></div>
+        <div class="mistake"><strong>State extra assumptions</strong><span>If independence or a distributional assumption is needed but unstated, make it explicit.</span></div>
+      </div>
+      <div class="section-title"><div><h3>Three exam-ready sentences</h3><p>Memorise the logic and adapt it to the specific question.</p></div></div>
+      <div class="takeaway">A weakly stationary process has a constant unconditional mean, a constant unconditional variance, and an autocovariance function that depends only on the time lag rather than on calendar time.</div>
+      <div class="takeaway">Under a mean-squared-error loss function, the optimal forecast is the conditional expectation of the future variable given the available information, and its forecast errors must satisfy specific properties of unbiasedness and unpredictability.</div>
+      <div class="takeaway">A model should not be selected solely on the basis of its goodness of fit or information criterion; its residuals must also be examined to ensure that the model adequately captures the relevant time-series dynamics.</div>
+      <div class="section-title"><div><h3>Coverage note</h3><p>Use this to plan the next upload / study pass.</p></div></div>
+      <div class="notice info">Current reference base: past-paper collection with dated sets 2020–2025 and lecture slides 1–8. The course outline lists later subjects including volatility extensions, risk-forecast evaluation, EMH, VaR models and backtesting, and high-frequency data. Add Lectures 9–11 to complete those sections with the instructor's exact notation and level of detail.</div>
+    </section>
+    <div class="footer">QF Exam Prep Studio · Static study tool · Progress saved in this browser only</div>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  // All content is embedded in this file. No frameworks, API keys or backend required.
+  const flashcards = [
+    {cat:"Foundations", front:"What are the three requirements for weak stationarity?", back:"Constant mean, constant variance, and covariance depending only on lag.", extra:"Check all three conditions. A constant variance alone is not sufficient."},
+    {cat:"Foundations", front:"What is the difference between a stochastic process and a time series?", back:"A stochastic process is a sequence of random variables; a time series is an observed realisation of that process.", extra:"Keep the probabilistic mechanism separate from the particular observed path."},
+    {cat:"Foundations", front:"Does strict stationarity necessarily imply weak stationarity?", back:"No. The moments required for weak stationarity may not exist.", extra:"For a Gaussian process, weak stationarity implies strict stationarity."},
+    {cat:"Foundations", front:"What does white noise require, and what does it not require?", back:"Zero mean, constant variance and zero autocovariance at non-zero lags. It need not be independent or IID.", extra:"Do not silently strengthen the assumptions."},
+    {cat:"Foundations", front:"Does zero covariance imply independence?", back:"No. Zero covariance is weaker than independence. Independence implies zero covariance when second moments exist.", extra:"The coin-toss exam problem tests precisely this distinction."},
+    {cat:"ARMA & Roots", front:"What are p, d and q in ARIMA(p,d,q)?", back:"p is the AR order; d is the differencing order; q is the MA order.", extra:"Count lagged dependent variables, differencing operations and lagged innovations separately."},
+    {cat:"ARMA & Roots", front:"Which polynomial determines AR stationarity?", back:"The AR polynomial. Its roots must lie outside the unit circle under the standard lag-polynomial convention.", extra:"Write the polynomial explicitly before discussing roots."},
+    {cat:"ARMA & Roots", front:"Which polynomial determines MA invertibility?", back:"The MA polynomial. Its roots must lie outside the unit circle under the standard lag-polynomial convention.", extra:"Invertibility is not the same as covariance stationarity."},
+    {cat:"ARMA & Roots", front:"Does a finite MA(q) require coefficient restrictions to be stationary?", back:"No, not for covariance stationarity, provided the innovations are stationary.", extra:"MA coefficients may still be restricted for invertibility."},
+    {cat:"ARMA & Roots", front:"What are the ACF and PACF cut-off rules?", back:"AR(p): PACF cuts off after p. MA(q): ACF cuts off after q. ARMA: both generally tail off.", extra:"These are theoretical identification patterns; sample correlograms are noisy."},
+    {cat:"Forecasting", front:"What is the optimal forecast under squared-error loss?", back:"The conditional expectation of the future value given the available information.", extra:"This result follows by minimising expected squared forecast error."},
+    {cat:"Forecasting", front:"What is the forecast error?", back:"Realised value minus forecast: eₜ₊ₕ|ₜ = Yₜ₊ₕ − Ŷₜ₊ₕ|ₜ.", extra:"Keep the horizon and information-set notation consistent."},
+    {cat:"Forecasting", front:"When calculating a conditional forecast, which innovations remain?", back:"Innovations already known at the forecast origin remain; unknown future innovations are replaced by their conditional expectation.", extra:"Under the stated zero-mean white-noise assumption, future innovations have conditional expectation zero."},
+    {cat:"Forecasting", front:"Name three properties of optimal forecast errors under MSE.", back:"Unbiased forecasts; one-step errors are white noise; h-step error variance is non-decreasing and converges to unconditional variance.", extra:"Another property: h-step errors are at most MA(h−1)."},
+    {cat:"Forecasting", front:"What is the optimal forecast under absolute-error loss?", back:"The conditional median.", extra:"Under asymmetric absolute loss, the optimal forecast is a conditional quantile."},
+    {cat:"Forecast evaluation", front:"What is the null hypothesis in a Mincer–Zarnowitz test?", back:"β₀ = 0 and β₁ = 1 in the regression of realised values on forecasts.", extra:"The restrictions should be tested jointly."},
+    {cat:"Forecast evaluation", front:"In DM, if d = loss A − loss B, what does a negative mean difference imply?", back:"Forecast A has lower average loss. Statistical significance must still be checked.", extra:"Define d before interpreting the sign."},
+    {cat:"Forecast evaluation", front:"What does forecast encompassing mean?", back:"A forecast encompasses another if it contains all relevant predictive information exploited by the other forecast.", extra:"The paper tests restrictions on coefficients in a regression involving both forecasts."},
+    {cat:"Financial risk", front:"What is volatility clustering?", back:"Periods of high volatility tend to be followed by high volatility, and low-volatility periods by low-volatility periods.", extra:"This motivates models with time-varying conditional variance."},
+    {cat:"Financial risk", front:"What does ARCH add to a return model?", back:"It makes current conditional variance depend on past squared innovations.", extra:"GARCH adds lagged conditional variance as well."}
+  ];
+
+  const topics = [
+    {name:"ARMA / ARIMA specification and simplification", count:"6/6", n:6, pattern:"Consistent", priority:"Very high", level:"high"},
+    {name:"Stationarity, roots and non-stationarity", count:"6/6", n:6, pattern:"Consistent", priority:"Very high", level:"high"},
+    {name:"Conditional forecasts, errors and error variances", count:"6/6", n:6, pattern:"Consistent", priority:"Very high", level:"high"},
+    {name:"White noise, innovations and moments", count:"5–6/6", n:5.5, pattern:"Consistent", priority:"Very high", level:"high"},
+    {name:"Optimal forecasts and loss functions", count:"5/6", n:5, pattern:"Consistent", priority:"Very high", level:"high"},
+    {name:"ACF, PACF and Yule–Walker", count:"4/6", n:4, pattern:"More prominent earlier", priority:"High", level:"high"},
+    {name:"Box–Jenkins, AIC/BIC and diagnostics", count:"3/6", n:3, pattern:"Recurring", priority:"High", level:"high"},
+    {name:"Forecast comparison, DM and encompassing", count:"3/6", n:3, pattern:"Recurring; stronger recently", priority:"High", level:"high"},
+    {name:"Financial returns and log-returns", count:"2/6", n:2, pattern:"Rotating", priority:"Medium", level:"medium"},
+    {name:"ARCH/GARCH volatility modelling", count:"1/6", n:1, pattern:"Occasional", priority:"Medium", level:"medium"},
+    {name:"VAR, Granger causality and cointegration", count:"1/6", n:1, pattern:"Occasional / earlier emphasis", priority:"Medium", level:"medium"},
+    {name:"Vasicek loan portfolio model", count:"1/6", n:1, pattern:"One-off dated appearance", priority:"Medium–low", level:"low"},
+    {name:"EMH, VaR backtesting and high-frequency data", count:"0/6 identifiable", n:0, pattern:"Syllabus topics; no dated-paper evidence", priority:"Uncertain", level:"low"}
+  ];
+
+  const predictions = [
+    {title:"Identify and analyse an ARMA/ARIMA process", topic:"ARMA / ARIMA", command:"Identify / derive", probability:"High", level:"high", why:"ARMA/ARIMA structure recurs throughout the dated sets and can combine order identification, lag-operator form, roots, stationarity, invertibility and simplification.", prepare:"Practise translating equations into p, d and q; writing lag polynomials; checking AR and MA roots separately; and recognising common factors that can be cancelled."},
+    {title:"Test stationarity and calculate moments / autocorrelation", topic:"Stationarity and moments", command:"Show / calculate", probability:"High", level:"high", why:"Stationarity is a consistent theme, often tested with a twist such as a deterministic trend or unusual process construction.", prepare:"Know the three weak-stationarity conditions, derive mean and variance, calculate overlapping-innovation covariances, and distinguish white noise from IID."},
+    {title:"Derive multi-step forecasts and forecast-error variances", topic:"Forecasting", command:"Derive", probability:"High", level:"high", why:"Forecasts, information sets and forecast errors are among the most persistent paper themes.", prepare:"Practise one-step, two-step and h-step forecasts for AR and MA processes. Label known versus future innovations and derive the error before taking its variance."},
+    {title:"Derive AR stationarity conditions and ACF / PACF", topic:"AR models and correlograms", command:"Derive / show", probability:"High", level:"high", why:"Earlier papers repeatedly test characteristic roots, autocorrelation structures and Yule–Walker relationships.", prepare:"Solve characteristic equations, apply the correct unit-circle convention, derive AR(1) ACF and recognise theoretical ACF/PACF cut-offs."},
+    {title:"Distinguish trend-stationary and difference-stationary processes; interpret ADF", topic:"Unit roots", command:"Explain / test", probability:"High", level:"high", why:"Unit roots and non-stationarity form a recurring foundation and are easy to combine with deterministic terms and model specification.", prepare:"Know the three DF deterministic specifications, the unit-root null, the correct critical-value logic and the distinction between detrending and differencing."},
+    {title:"Derive optimal forecasts under alternative loss functions", topic:"Forecast optimality", command:"Derive / compare", probability:"High", level:"high", why:"Recent mock material gives strong emphasis to forecast optimality and even supplies a custom loss function.", prepare:"Set up expected loss, differentiate with respect to the forecast, solve the FOC and check the SOC. Know mean, median and quantile results."},
+    {title:"Compare two forecasts using the Diebold–Mariano test", topic:"Forecast comparison", command:"Test / interpret", probability:"Medium–High", level:"medium", why:"The DM test appears in recent papers and naturally combines a loss function, hypothesis testing and interpretation.", prepare:"Define the loss differential, state hypotheses, use the appropriate variance estimator, calculate the statistic and interpret both significance and sign."},
+    {title:"Test forecast encompassing and derive optimal combination weights", topic:"Forecast combination", command:"Test / derive", probability:"Medium–High", level:"medium", why:"Forecast encompassing and optimal combinations feature in the recent mock and combine regression restrictions with variance minimisation.", prepare:"Memorise the encompassing restrictions, derive the combined MSE, differentiate with respect to the weight and handle the equal-accuracy case."},
+    {title:"Explain stylised facts and connect conditional volatility to VaR", topic:"Financial returns and risk", command:"Explain / derive", probability:"Medium", level:"medium", why:"The lectures explicitly move from return characteristics to ARCH/GARCH and introduce VaR as a course-wide anchor formula, although later risk slides were not supplied.", prepare:"Know volatility clustering, heavy tails, leverage effects, the ARCH mechanism and the normal VaR formula shown in Lecture 1. Check the actual later lecture notes for full coverage."},
+    {title:"Test Granger causality in a bivariate VAR and discuss cointegration", topic:"VAR and cointegration", command:"Test / interpret", probability:"Medium–Low", level:"low", why:"VAR is in the uploaded lecture pack, but its dated-paper presence is less frequent than the ARMA and forecasting foundations.", prepare:"Write the two equations, identify the joint restrictions on lagged explanatory variables, interpret predictive content and understand the Johansen rank cases."}
+  ];
+
+  const questions = [
+    {topic:"Stationarity", difficulty:"Core", q:"Which set of conditions defines weak (covariance) stationarity?", opts:["Constant mean only","Constant mean and variance only","Constant mean, constant variance and autocovariance depending only on lag","Time-invariant joint distributions of every order"], a:2, exp:"Weak stationarity is defined through first and second moments: constant mean, constant variance and autocovariance depending only on the lag. Time-invariant joint distributions describe strict stationarity."},
+    {topic:"White noise", difficulty:"Core", q:"Which statement about a white-noise process is correct?", opts:["It must be IID normal","It has zero autocovariance at non-zero lags, but need not be independent","It must have zero variance","It must be strictly stationary under every distribution"], a:1, exp:"White noise requires zero mean, constant variance and zero autocovariances at non-zero lags. Independence and normality are stronger assumptions."},
+    {topic:"ARMA classification", difficulty:"Core", q:"A process is Yₜ = 2 + εₜ + 0.4εₜ₋₁ − 0.2εₜ₋₃. What is its MA order?", opts:["MA(1)","MA(2)","MA(3)","ARMA(3,1)"], a:2, exp:"The MA order is the maximum lag of the innovation with a non-zero coefficient. The lag-2 term is absent, but the maximum innovation lag is 3."},
+    {topic:"MA stationarity", difficulty:"Core", q:"What restrictions on finite MA(q) coefficients are required for covariance stationarity if the innovations are stationary?", opts:["All coefficients must be less than one","The sum of absolute coefficients must be less than one","No restrictions are needed for covariance stationarity","The MA polynomial must have roots inside the unit circle"], a:2, exp:"A finite linear combination of stationary innovations is covariance stationary. MA coefficient restrictions relate to invertibility, not this stationarity result."},
+    {topic:"Roots", difficulty:"Core", q:"Under the standard lag-polynomial convention, where must AR polynomial roots lie for stationarity?", opts:["Inside the unit circle","On the unit circle","Outside the unit circle","At zero"], a:2, exp:"For φ(z)=0 written as the standard AR lag polynomial, stationarity requires roots outside the unit circle. Reciprocal characteristic roots use the opposite inside/outside wording."},
+    {topic:"ACF / PACF", difficulty:"Core", q:"For an AR(p) process, which theoretical correlogram pattern is expected?", opts:["ACF cuts off after p; PACF tails off","ACF tails off; PACF cuts off after p","Both cut off after p","Both always equal zero after lag 1"], a:1, exp:"For AR(p), the ACF generally tails off, while the PACF cuts off after lag p."},
+    {topic:"Forecasting", difficulty:"Core", q:"Under squared-error loss, what is the optimal forecast of Yₜ₊ₕ given information Iₜ?", opts:["Conditional median","Conditional mode","Conditional expectation","Unconditional variance"], a:2, exp:"Minimising expected squared error gives the conditional expectation E(Yₜ₊ₕ | Iₜ)."},
+    {topic:"Information sets", difficulty:"Challenge", q:"At time t, εₜ is known and εₜ₊₁ is a future zero-mean innovation. In a forecast of Yₜ₊₁, what happens to these terms?", opts:["Both are set to zero","Both are retained unchanged","εₜ is retained; εₜ₊₁ is replaced by its conditional expectation, zero","εₜ is replaced by zero; εₜ₊₁ is retained"], a:2, exp:"The conditional forecast retains observed innovations known at the forecast origin and averages over future unknown innovations."},
+    {topic:"Forecast errors", difficulty:"Core", q:"How is the h-step forecast error defined?", opts:["Forecast minus realised value","Realised value minus forecast","Realised value divided by forecast","Forecast variance minus unconditional variance"], a:1, exp:"The standard definition is eₜ₊ₕ|ₜ = Yₜ₊ₕ − Ŷₜ₊ₕ|ₜ."},
+    {topic:"Loss functions", difficulty:"Challenge", q:"Which forecast minimises expected absolute-error loss?", opts:["Conditional mean","Conditional median","Conditional variance","Unconditional mean in all cases"], a:1, exp:"The conditional median minimises expected absolute deviation. Asymmetric absolute loss leads to a conditional quantile."},
+    {topic:"Mincer–Zarnowitz", difficulty:"Core", q:"What is the null hypothesis in the standard Mincer–Zarnowitz regression?", opts:["β₀=1 and β₁=0","β₀=0 and β₁=1","β₀=β₁=0","β₁ is statistically significant"], a:1, exp:"The standard regression is realised values on a constant and the forecast. The joint null is intercept zero and slope one."},
+    {topic:"Diebold–Mariano", difficulty:"Challenge", q:"Define dₜ = loss A − loss B. If the average d is negative and the difference is statistically significant, what follows?", opts:["B is significantly better","A is significantly better","The forecasts are equally accurate","Neither model has forecast errors"], a:1, exp:"A negative mean differential means A has lower average loss. Statistical significance indicates the expected losses differ."},
+    {topic:"Forecast combination", difficulty:"Challenge", q:"Two forecasts have equal error variance σ² and error correlation ρ. What are the minimum-MSE weights?", opts:["ω=1 and 1−ω=0","ω=0.25 and 1−ω=0.75","ω=0.5 and 1−ω=0.5","Weights depend only on sample size"], a:2, exp:"With equal variances, the optimal convex combination is equally weighted. The resulting MSE is σ²(1+ρ)/2."},
+    {topic:"Unit roots", difficulty:"Core", q:"In the simple DF regression ΔYₜ = γYₜ₋₁ + εₜ, what is the unit-root null?", opts:["γ=1","γ=0","γ<0","γ>1"], a:1, exp:"The unit-root null is γ=0 in this parameterisation. The alternative is stationarity under the chosen deterministic specification."},
+    {topic:"Financial volatility", difficulty:"Application", q:"What feature of financial returns motivates ARCH-type conditional variance models?", opts:["Returns have constant volatility at all times","Volatility clustering: large movements tend to cluster together","Prices are always stationary","Returns are always normally distributed"], a:1, exp:"Volatility clustering means conditional variance changes through time. ARCH models make current conditional variance depend on past squared innovations."}
+  ];
+
+  const storageKey = "qf-exam-prep-studio-v1";
+  const defaultState = {ratings:{}, bestScore:null, attempts:0, practised:0};
+  let state = loadState();
+  function loadState(){ try { return {...defaultState, ...(JSON.parse(localStorage.getItem(storageKey)) || {})}; } catch(e) { return {...defaultState}; } }
+  function saveState(){ localStorage.setItem(storageKey, JSON.stringify(state)); updateStats(); }
+  function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast.timer); toast.timer=setTimeout(()=>t.classList.remove('show'),2100); }
+  function go(page){ document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+page)); document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===page)); const titleMap={dashboard:'Your exam command centre',flashcards:'Active recall workspace',quiz:'Exam practice',predictions:'Predicted question types',topics:'Past-paper intelligence',revision:'Consolidated revision sheet',formulas:'Formula vault', 'exam-method':'Exam technique'}; document.getElementById('page-title').textContent=titleMap[page]||'Exam Prep'; document.getElementById('sidebar').classList.remove('open'); window.scrollTo({top:0,behavior:'smooth'}); }
+  document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
+  document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+  document.getElementById('mobile-menu').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));
+  document.getElementById('print-btn').addEventListener('click',()=>window.print());
+  document.getElementById('today-chip').textContent = new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric'}).format(new Date());
+
+  // Dashboard and topic table
+  function renderPriorities(){ const el=document.getElementById('dashboard-priorities'); const top=topics.slice(0,5); el.innerHTML=top.map(t=>`<div class="priority-row"><div><strong>${t.name}</strong><small>${t.count} dated sets · ${t.pattern}</small></div><span class="pill ${t.level}">${t.priority}</span><div class="progress-line"><span style="width:${Math.round(t.n/6*100)}%"></span></div></div>`).join(''); }
+  function renderTopics(){ document.getElementById('topic-table').innerHTML=topics.map(t=>`<tr><td><strong>${t.name}</strong></td><td><span class="freq">${t.count}</span><div class="frequency-bar"><span style="width:${t.n/6*100}%"></span></div></td><td>${t.pattern}</td><td><span class="pill ${t.level}">${t.priority}</span></td></tr>`).join(''); }
+
+  // Flashcard mechanics
+  let flashIndex=0, filteredCards=[...flashcards], isFlipped=false;
+  const categorySel=document.getElementById('flash-category');
+  [...new Set(flashcards.map(c=>c.cat))].forEach(cat=>{ const o=document.createElement('option'); o.value=cat; o.textContent=cat; categorySel.appendChild(o); });
+  function applyFlashFilter(){ const filter=document.getElementById('flash-filter').value, cat=categorySel.value; filteredCards=flashcards.filter((c,i)=>{const r=state.ratings[i]||'new';return (cat==='all'||c.cat===cat)&&(filter==='all'||r===filter);}); flashIndex=0; renderFlash(); }
+  function renderFlash(){
+    const card=filteredCards[flashIndex];
+    document.getElementById('flashcard').classList.remove('flipped'); isFlipped=false;
+    if(!card){ document.getElementById('flash-front').textContent='No cards in this filter.'; document.getElementById('flash-back').textContent='Change the topic or rating filter to continue.'; document.getElementById('flash-extra').textContent=''; document.getElementById('flash-category-label').textContent='EMPTY FILTER'; document.getElementById('flash-rating-label').textContent=''; document.getElementById('flash-progress-label').textContent='0 cards'; document.getElementById('flash-progress').style.width='0%'; return; }
+    const originalIndex=flashcards.indexOf(card), rating=state.ratings[originalIndex]||'new';
+    document.getElementById('flash-front').textContent=card.front; document.getElementById('flash-back').textContent=card.back; document.getElementById('flash-extra').textContent=card.extra||'';
+    document.getElementById('flash-category-label').textContent=card.cat.toUpperCase(); document.getElementById('flash-rating-label').textContent=rating==='known'?'✓ Marked known':rating==='again'?'↻ Needs practice':'Not rated';
+    document.getElementById('flash-progress-label').textContent=`Card ${flashIndex+1} of ${filteredCards.length}`; document.getElementById('flash-progress').style.width=`${(flashIndex+1)/filteredCards.length*100}%`;
+    document.getElementById('flash-flip').textContent='Reveal answer';
+  }
+  function flip(){ if(!filteredCards.length)return; isFlipped=!isFlipped; document.getElementById('flashcard').classList.toggle('flipped',isFlipped); document.getElementById('flash-flip').textContent=isFlipped?'Show question':'Reveal answer'; }
+  function moveFlash(d){ if(!filteredCards.length)return; flashIndex=(flashIndex+d+filteredCards.length)%filteredCards.length; renderFlash(); }
+  document.getElementById('flashcard').addEventListener('click',flip); document.getElementById('flashcard').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();flip();}});
+  document.getElementById('flash-flip').addEventListener('click',flip); document.getElementById('flash-prev').addEventListener('click',()=>moveFlash(-1)); document.getElementById('flash-next').addEventListener('click',()=>moveFlash(1));
+  document.getElementById('flash-filter').addEventListener('change',applyFlashFilter); categorySel.addEventListener('change',applyFlashFilter);
+  function rateCard(r){ if(!filteredCards.length)return; const id=flashcards.indexOf(filteredCards[flashIndex]); state.ratings[id]=r; saveState(); toast(r==='known'?'Marked as known':'Added to your practice pile'); renderFlash(); }
+  document.getElementById('rate-again').addEventListener('click',()=>rateCard('again')); document.getElementById('rate-known').addEventListener('click',()=>rateCard('known'));
+  document.getElementById('shuffle-cards').addEventListener('click',()=>{for(let i=filteredCards.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[filteredCards[i],filteredCards[j]]=[filteredCards[j],filteredCards[i]];}flashIndex=0;renderFlash();toast('Cards shuffled');});
+  document.getElementById('reset-cards').addEventListener('click',()=>{if(confirm('Reset all flashcard ratings?')){state.ratings={};saveState();applyFlashFilter();toast('Ratings reset');}});
+  document.addEventListener('keydown',e=>{if(document.querySelector('#page-flashcards.active')){if(e.key==='ArrowRight')moveFlash(1);if(e.key==='ArrowLeft')moveFlash(-1);if(e.code==='Space'&&document.activeElement.tagName!=='BUTTON'&&document.activeElement.tagName!=='INPUT'&&document.activeElement.tagName!=='SELECT'){e.preventDefault();flip();}if(e.key==='1')rateCard('again');if(e.key==='2')rateCard('known');}});
+
+  // Quiz mechanics
+  let quizIndex=0, quizScore=0, quizAttempted=0, quizAnswered=false;
+  function renderQuiz(){ const q=questions[quizIndex]; quizAnswered=false; document.getElementById('quiz-topic').textContent=q.topic;document.getElementById('quiz-difficulty').textContent=q.difficulty;document.getElementById('quiz-counter').textContent=`Question ${quizIndex+1} / ${questions.length}`;document.getElementById('quiz-progress').style.width=`${(quizIndex+1)/questions.length*100}%`;document.getElementById('quiz-question').textContent=q.q;document.getElementById('quiz-feedback').className='feedback';document.getElementById('quiz-feedback').textContent='';document.getElementById('quiz-next').disabled=true;document.getElementById('quiz-next').textContent=quizIndex===questions.length-1?'Finish set':'Next question →';document.getElementById('quiz-options').innerHTML=q.opts.map((o,i)=>`<button class="option" data-option="${i}"><span class="letter">${String.fromCharCode(65+i)}</span><span>${o}</span></button>`).join('');document.querySelectorAll('[data-option]').forEach(b=>b.addEventListener('click',()=>answerQuiz(Number(b.dataset.option))));document.getElementById('quiz-score-live').textContent=`Score: ${quizScore} correct`;document.getElementById('quiz-correct').textContent=quizScore;document.getElementById('quiz-attempted').textContent=quizAttempted; }
+  function answerQuiz(choice){ if(quizAnswered)return;quizAnswered=true;const q=questions[quizIndex], correct=choice===q.a;quizAttempted++;state.practised=(state.practised||0)+1;if(correct)quizScore++;document.querySelectorAll('[data-option]').forEach((b,i)=>{b.disabled=true;if(i===q.a)b.classList.add('correct');if(i===choice&&!correct)b.classList.add('wrong');});const f=document.getElementById('quiz-feedback');f.className='feedback show '+(correct?'good':'bad');f.innerHTML=`<strong>${correct?'Correct.':'Not quite.'}</strong> ${q.exp}`;document.getElementById('quiz-next').disabled=false;document.getElementById('quiz-score-live').textContent=`Score: ${quizScore} correct`;document.getElementById('quiz-correct').textContent=quizScore;document.getElementById('quiz-attempted').textContent=quizAttempted;saveState();}
+  function nextQuiz(){if(!quizAnswered)return;if(quizIndex===questions.length-1){finishQuiz();return;}quizIndex++;renderQuiz();}
+  function finishQuiz(){const pct=Math.round(quizScore/questions.length*100);state.attempts=(state.attempts||0)+1;state.bestScore=state.bestScore===null?pct:Math.max(state.bestScore,pct);saveState();document.getElementById('quiz-topic').textContent='Practice set complete';document.getElementById('quiz-difficulty').textContent='Result';document.getElementById('quiz-question').textContent=`You scored ${quizScore} out of ${questions.length} (${pct}%).`;document.getElementById('quiz-options').innerHTML='';const f=document.getElementById('quiz-feedback');f.className='feedback show '+(pct>=80?'good':'bad');f.innerHTML=pct>=80?'<strong>Strong result.</strong> Now practise full derivations, where method and interpretation matter.':'<strong>Use the result diagnostically.</strong> Review the topics you missed, then repeat the set.';document.getElementById('quiz-next').disabled=true;document.getElementById('quiz-next').textContent='Completed';toast('Attempt saved');}
+  document.getElementById('quiz-next').addEventListener('click',nextQuiz);document.getElementById('quiz-restart').addEventListener('click',()=>{quizIndex=0;quizScore=0;quizAttempted=0;renderQuiz();});
+
+  // Predictions
+  function renderPredictions(){document.getElementById('prediction-list').innerHTML=predictions.map((p,i)=>`<article class="prediction"><div class="prediction-top"><div class="prediction-num">${String(i+1).padStart(2,'0')}</div><div><div class="prediction-title">${p.title}</div><div class="prediction-meta">${p.topic} · Primary command: <strong>${p.command}</strong></div></div><span class="pill ${p.level}">${p.probability}</span></div><div class="prediction-detail"><p><strong>Why this is likely:</strong> ${p.why}</p><p><strong>What to prepare:</strong> ${p.prepare}</p></div></article>`).join('');document.querySelectorAll('.prediction-top').forEach(el=>el.addEventListener('click',()=>el.parentElement.classList.toggle('open')));}
+  document.getElementById('expand-predictions').addEventListener('click',()=>{const items=[...document.querySelectorAll('.prediction')],all=items.every(x=>x.classList.contains('open'));items.forEach(x=>x.classList.toggle('open',!all));document.getElementById('expand-predictions').textContent=all?'Expand all':'Collapse all';});
+
+  // Search / filters
+  document.getElementById('revision-search').addEventListener('input',e=>{const s=e.target.value.toLowerCase();document.querySelectorAll('#revision-content .accordion').forEach(a=>{const hit=(a.innerText+' '+(a.dataset.search||'')).toLowerCase().includes(s);a.style.display=hit?'':'none';if(s&&hit)a.open=true;});});
+  document.getElementById('formula-search').addEventListener('input',e=>{const s=e.target.value.toLowerCase();document.querySelectorAll('#formula-grid .formula').forEach(f=>f.style.display=(f.innerText+' '+(f.dataset.search||'')).toLowerCase().includes(s)?'':'none');});
+
+  // Progress stats
+  function updateStats(){const ratings=Object.values(state.ratings||{}),known=ratings.filter(x=>x==='known').length,again=ratings.filter(x=>x==='again').length,newCount=flashcards.length-known-again;document.getElementById('stat-known').textContent=known;document.getElementById('stat-known-hint').textContent=`of ${flashcards.length} marked as known`;document.getElementById('stat-score').textContent=state.bestScore===null?'—':`${state.bestScore}%`;document.getElementById('stat-practised').textContent=state.practised||0;document.getElementById('stat-review').textContent=flashcards.length-known;document.getElementById('nav-card-count').textContent=flashcards.length;document.getElementById('recall-percentage').textContent=Math.round(known/flashcards.length*100)+'%';document.getElementById('recall-bar').style.width=known/flashcards.length*100+'%';document.getElementById('recall-known').textContent=known+' known';document.getElementById('recall-again').textContent=again+' to revisit';document.getElementById('recall-new').textContent=newCount+' new';}
+  renderPriorities();renderTopics();renderPredictions();renderFlash();renderQuiz();updateStats();
+</script>
+</body>
+</html>
